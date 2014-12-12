@@ -50,12 +50,21 @@ function $StateProvider(   $urlRouterProvider,   $urlMatcherFactory) {
     url: function(state) {
       var url = state.url, config = { params: state.params || {} };
 
+      if (!url) return url;
+
       if (isString(url)) {
         if (url.charAt(0) == '^') return $urlMatcherFactory.compile(url.substring(1), config);
         return (state.parent.navigable || root).url.concat(url, config);
       }
 
-      if (!url || $urlMatcherFactory.isMatcher(url)) return url;
+      if ($urlMatcherFactory.isMatcher(url)) {
+        if (url.inherits && state.parent.url.inherits) {
+          url = state.parent.url.concat(url);
+        }
+
+        return url;
+      }
+
       throw new Error("Invalid url '" + url + "' in state '" + state + "'");
     },
 
